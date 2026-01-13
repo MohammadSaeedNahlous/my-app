@@ -56,17 +56,40 @@ export const config = {
     }),
   ],
   callbacks: {
+    // the session callback is called whenever a session is checked
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, user, trigger, token }: any) {
       // set the user Id from the token
       // sub is a standard JWT claim that contains the user ID
       session.user.id = token.sub;
+      session.user.role = token.role;
+      session.user.name = token.name;
 
       // if theres a trigger called "update" we update the session data
       if (trigger === 'update') {
         session.user.name = token.name;
       }
       return session;
+    },
+
+    // the jwt callback is called whenever a JWT is created or updated
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async jwt({ token, user, trigger, session }: any) {
+      // assign user role to the token on initial sign in
+      if (user) {
+        token.role = user.role;
+      }
+      // if user has no name then use the first part of the email
+      if (user.name === 'NO_NAME') {
+        token.name = user.email.split('@')[0];
+
+        // update the database with the new name
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { name: token.name },
+        });
+      }
+      return token;
     },
   },
 } satisfies NextAuthConfig;
