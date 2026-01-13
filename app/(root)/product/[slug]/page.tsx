@@ -11,7 +11,7 @@ const ProductDetailsPage = async (props: {
 }) => {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
-  console.log(product);
+
   if (!product) {
     notFound();
   }

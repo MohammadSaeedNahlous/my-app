@@ -12,7 +12,7 @@ export default async function Home() {
   const convertedProducts = latestProducts.map((product) =>
     convertToPlainObject(product)
   );
-  console.log(latestProducts);
+
   return (
     <>
       <ProductList
