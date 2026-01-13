@@ -29,7 +29,9 @@ const SignInPage = async ({
 }) => {
   const { callbackUrl } = await searchParams;
   const session = await auth();
+
   if (session) {
+    console.log('User is already authenticated:', session);
     // If the user is already authenticated, redirect to the home page
     return redirect(callbackUrl || '/');
   }
