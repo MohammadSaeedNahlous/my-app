@@ -31,6 +31,7 @@ const CredsSignInForm = () => {
   };
   return (
     <form action={action}>
+      {/* Hidden input to pass callbackUrl to the action by next-auth */}
       <input type='hidden' name='callbackUrl' value={callbackUrl} />
       <div className='space-y-6'>
         <div>

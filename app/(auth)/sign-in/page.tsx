@@ -22,10 +22,12 @@ export const metadata: Metadata = {
 // the props contains the search params from the URL
 // promise is used to handle async data fetching
 // callbackUrl is used to redirect the user after successful sign in
-const SignInPage = async (props: {
-  searchparams: Promise<{ callbackUrl: string }>;
+const SignInPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
 }) => {
-  const { callbackUrl } = await props.searchparams;
+  const { callbackUrl } = await searchParams;
   const session = await auth();
   if (session) {
     // If the user is already authenticated, redirect to the home page
