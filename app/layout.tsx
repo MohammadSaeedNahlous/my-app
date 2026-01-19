@@ -2,6 +2,7 @@ import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from '@/lib/constants';
 import type { Metadata } from 'next';
 import { ThemeProvider } from 'next-themes';
 import { Inter } from 'next/font/google';
+import { ToastContainer } from 'react-toastify';
 import './globals.css';
 
 const inter = Inter({
@@ -32,6 +33,7 @@ export default function RootLayout({
           enableSystem
         >
           {children}
+          <ToastContainer />
         </ThemeProvider>
       </body>
     </html>
