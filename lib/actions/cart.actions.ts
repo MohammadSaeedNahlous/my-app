@@ -153,46 +153,52 @@ export async function getMyCart() {
 
 export async function removeItemFromCart(productId: string) {
   try {
-    // Check for cart cookie
+    // Get session cart cookie
     const sessionCartId = (await cookies()).get('sessionCartId')?.value;
     if (!sessionCartId) throw new Error('Cart session not found');
 
-    // Get Product
+    // get product
     const product = await prisma.product.findFirst({
       where: { id: productId },
     });
     if (!product) throw new Error('Product not found');
 
-    // Get user cart
+    // Get cart
     const cart = await getMyCart();
     if (!cart) throw new Error('Cart not found');
 
-    // Check for item
+    // Check if cart has the item
     const exist = (cart.items as CartItem[]).find(
-      (x) => x.productId === productId,
+      (item) => item.productId === productId,
     );
-    if (!exist) throw new Error('Item not found');
+    if (!exist) throw new Error('Item not found in cart');
 
-    // Check if only one in qty
+    // Check if cart has only one item
     if (exist.qty === 1) {
-      // Remove from cart
+      // Remove item from cart
       cart.items = (cart.items as CartItem[]).filter(
-        (x) => x.productId !== exist.productId,
+        (item) => item.productId !== exist.productId,
       );
     } else {
-      // Decrease qty
-      (cart.items as CartItem[]).find((x) => x.productId === productId)!.qty =
-        exist.qty - 1;
+      // Decrease quantity
+      (cart.items as CartItem[]).find(
+        (item) => item.productId === exist.productId,
+      )!.qty = exist.qty - 1;
     }
 
-    // Update cart in database
+    // Update Cart in database, items and prices
     await prisma.cart.update({
       where: { id: cart.id },
       data: {
+        // Prisma.cartUpdateItemsInput[] type is required,
+        // because Prisma does not recognize CartItem[] type
+        // it came from JSON.parse in convertToPlainObject function
         items: cart.items as Prisma.CartUpdateitemsInput[],
         ...calcPrice(cart.items as CartItem[]),
       },
     });
+
+    // revalidate the page
 
     revalidatePath(`/product/${product.slug}`);
 
