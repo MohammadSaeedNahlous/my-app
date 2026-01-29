@@ -29,6 +29,7 @@ const SignInPage = async ({
 }) => {
   const { callbackUrl } = await searchParams;
   const session = await auth();
+  console.log({ session });
 
   if (session) {
     console.log('User is already authenticated:', session);
@@ -54,7 +55,6 @@ const SignInPage = async ({
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4 '>
-          {/* Sign In Form Component */}
           <CredsSignInForm />
         </CardContent>
       </Card>

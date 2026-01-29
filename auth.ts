@@ -4,6 +4,7 @@ import { compareSync } from 'bcrypt-ts-edge';
 // import type { NextAuthConfig } from 'next-auth';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { cookies } from 'next/headers';
 import { authConfig } from './auth.config';
 
 // Define NextAuth configuration
@@ -37,7 +38,7 @@ export const config = {
         if (user && user.password) {
           const isMatch = compareSync(
             credentials.password as string,
-            user.password
+            user.password,
           );
           // if password matches, return the user object
           if (isMatch) {
@@ -62,6 +63,7 @@ export const config = {
     async session({ session, user, trigger, token }: any) {
       // set the user Id from the token
       // sub is a standard JWT claim that contains the user ID
+
       session.user.id = token.sub;
       session.user.role = token.role;
       session.user.name = token.name;
@@ -78,17 +80,53 @@ export const config = {
     async jwt({ token, user, trigger, session }: any) {
       // assign user role to the token on initial sign in
       if (user) {
+        token.id = user.id;
         token.role = user.role;
-      }
-      // if user has no name then use the first part of the email
-      if (user.name === 'NO_NAME') {
-        token.name = user.email.split('@')[0];
+        // if user has no name then use the first part of the email
+        if (user.name === 'NO_NAME' && user.email) {
+          token.name = user.email.split('@')[0];
+          // update the database with the new name
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { name: token.name },
+          });
+        } else if (user.name) {
+          token.name = user.name;
+        }
+        if (user.email) {
+          token.email = user.email;
+        }
 
-        // update the database with the new name
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { name: token.name },
-        });
+        if (trigger === 'signIn' || trigger === 'signUp') {
+          const cookiesObject = await cookies();
+
+          const cookieCartId = cookiesObject.get('sessionCartId')?.value;
+          if (cookieCartId) {
+            const cart = await prisma.cart.findFirst({
+              where: {
+                sessionCartId: cookieCartId,
+              },
+            });
+
+            if (cart) {
+              // delete old cart for the user
+              await prisma.cart.deleteMany({
+                where: {
+                  userId: user.id,
+                },
+              });
+
+              // assign new cart by updating the user Id for the current cart in the session cookie
+
+              await prisma.cart.update({
+                where: { id: cart.id },
+                data: {
+                  userId: user.id,
+                },
+              });
+            }
+          }
+        }
       }
       return token;
     },

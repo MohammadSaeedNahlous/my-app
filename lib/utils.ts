@@ -52,3 +52,15 @@ export function roundToTwoDecimalPlaces(value: number | string) {
     throw new Error('Value is not a number or string');
   }
 }
+
+// currency formater
+const CURRENCY_FORMATTER = new Intl.NumberFormat('nl-NL', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+});
+
+export function formatCurrency(amount: string | number | null): string {
+  const value = Number(amount);
+  return isNaN(value) ? 'NaN' : CURRENCY_FORMATTER.format(value);
+}

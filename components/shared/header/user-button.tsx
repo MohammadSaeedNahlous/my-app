@@ -13,6 +13,7 @@ import Link from 'next/link';
 
 const UserButton = async () => {
   const session = await auth();
+  console.log({ session });
 
   if (!session) {
     return (

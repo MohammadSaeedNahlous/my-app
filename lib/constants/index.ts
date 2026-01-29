@@ -20,3 +20,11 @@ export const SIGN_UP_DEFAULT_VALUES = {
   confirmPassword: '',
   name: '',
 };
+
+export const SHIPPING_ADDRESS_DEFAULT_VALUES = {
+  fullName: 'Mohammad Nah',
+  streetAddress: 'Middenwetering',
+  country: 'Netherlands',
+  city: 'Krimpen',
+  postalCode: '2922EG',
+};
